@@ -47,13 +47,14 @@ jobs:
           NEW="${{ steps.version.outputs.new_version }}"
           python3 - <<PY
           from pathlib import Path
+          new_version = "${NEW}"
           p = Path("pubspec.yaml")
           lines = p.read_text().splitlines()
           out = []
           done = False
           for line in lines:
             if not done and line.startswith("version:"):
-              out.append(f"version: {NEW}")
+              out.append(f"version: {new_version}")
               done = True
             else:
               out.append(line)
