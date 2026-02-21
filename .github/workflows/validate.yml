@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: dart pub get
 
+      - name: Fix analysis issues
+        run: dart fix --apply
+
       - name: Generate built_value files
         run: dart run build_runner build --delete-conflicting-outputs
 
