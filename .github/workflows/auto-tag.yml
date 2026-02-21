@@ -100,5 +100,6 @@ jobs:
           git add pubspec.yaml CHANGELOG.md
           git commit -m "chore: release v$VERSION"
           git tag "v$VERSION"
+          git push origin sdk/auto-update
           git push origin main
           git push origin "v$VERSION"

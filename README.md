@@ -1,17 +1,41 @@
 # Moorsyl Dart SDK
 
-Official Dart/Flutter client for the Moorsyl API.
+Send SMS and verify phone numbers in Mauritania — from your Dart or Flutter app.
 
-Create your account and get your API key: **[moorsyl.com](https://moorsyl.com)**  
-Read full API docs: **[docs.moorsyl.com](https://docs.moorsyl.com)**
+**[Sign up at moorsyl.com](https://moorsyl.com)** · **[Full API docs](https://docs.moorsyl.com)**
 
-## Features
+---
 
-- Send SMS messages.
-- Fetch SMS delivery status.
-- Send OTP verification codes.
-- Check OTP verification results.
-- Built on top of `dio` with typed request/response models.
+## What is Moorsyl?
+
+Moorsyl is a communications platform built for Mauritania. With one SDK you can:
+
+- **Send SMS** — queue a text message to any Mauritanian number in a single call.
+- **Verify phone numbers** — send a one-time code and confirm your user actually owns the number. Works for signups, passwordless login, and step-up auth.
+
+---
+
+## How it all fits together
+
+```
+Your server                      Your Flutter app
+──────────────────────           ──────────────────────
+smsSend(...)        ←sk_live_…   verifySend(...)  ←pk_live_…
+smsGet(...)                      verifyCheck(...) ←pk_live_…
+```
+
+There are two key types and they map directly to which parts of the SDK you can call from where:
+
+| Key             | Prefix      | What it unlocks                  | Safe to ship in app?       |
+| --------------- | ----------- | -------------------------------- | -------------------------- |
+| **Secret**      | `sk_live_…` | `SMSApi` — send & fetch messages | **No** — server only       |
+| **Publishable** | `pk_live_…` | `VerifyApi` — send & check OTPs  | **Yes** — browser & mobile |
+
+The rule of thumb: everything in `SMSApi` needs a secret key and must live on your backend. Everything in `VerifyApi` takes a publishable key and can be called directly from Flutter with no backend in the middle.
+
+Generate both from [app.moorsyl.com](https://app.moorsyl.com) → API Keys.
+
+---
 
 ## Installation
 
@@ -26,198 +50,153 @@ dependencies:
   moorsyl: ^1.0.0
 ```
 
-## Quick Start
+---
 
-1. Sign up at [moorsyl.com](https://moorsyl.com).
-2. Get your API key from your dashboard.
-3. Check endpoint details at [docs.moorsyl.com](https://docs.moorsyl.com).
+## SMS — server-side only
+
+The SMS API requires a **secret key**. Never include `sk_live_…` in a Flutter app.
+
+### Send a message
 
 ```dart
 import 'package:moorsyl/moorsyl.dart';
 
 final client = Moorsyl();
-client.setApiKey('ApiKey', 'YOUR_MOORSYL_API_KEY');
+client.setApiKey('ApiKey', 'sk_live_...');
+
+final smsApi = client.getSMSApi();
+
+final response = await smsApi.smsSend(
+  smsSendRequest: SmsSendRequest((b) => b
+    ..to = '+22236551999'    // Mauritanian numbers only: +222[2-4]XXXXXXX
+    ..from = 'MyBrand'       // optional, sender ID, max 11 chars
+    ..body = 'Your order #1042 has been shipped.'
+    ..idempotencyKey = 'order-1042-shipped'), // optional, prevents double-sends
+);
+
+print(response.data?.accepted); // true = queued for delivery
 ```
 
-By default, the SDK uses:
-
-- Base URL: `https://api.moorsyl.com/api`
-- Timeout: 5s connect, 3s receive
-
-You can override the base URL:
+### Fetch message status
 
 ```dart
-final client = Moorsyl(basePathOverride: 'https://api.moorsyl.com/api');
+final response = await smsApi.smsGet(
+  smsGetRequest: SmsGetRequest((b) => b..messageId = 'msg_...'),
+);
+
+final msg = response.data!;
+print('${msg.status.name}'); // pending | processing | sent | failed
 ```
 
-## Send SMS
+---
+
+## Verify — safe to call from Flutter
+
+The Verify API uses a **publishable key** (`pk_live_…`). You can embed it directly in your Flutter app.
+
+The flow is always two steps:
+
+```
+1. verifySend  →  Moorsyl SMS the user a 6-digit code
+2. User types the code into your UI
+3. verifyCheck →  approved ✓  or  denied ✗
+```
+
+### Step 1 — send the code
 
 ```dart
-import 'package:dio/dio.dart';
 import 'package:moorsyl/moorsyl.dart';
 
-Future<void> sendSmsExample() async {
-  final client = Moorsyl();
-  client.setApiKey('ApiKey', 'YOUR_MOORSYL_API_KEY');
+final client = Moorsyl();
+client.setApiKey('ApiKey', 'pk_live_...'); // publishable key — safe in Flutter
 
-  final smsApi = client.getSMSApi();
+final verifyApi = client.getVerifyApi();
 
-  try {
-    final response = await smsApi.smsSend(
-      smsSendRequest: SmsSendRequest((b) => b
-        ..to = '22230000000'
-        ..from = 'Moorsyl'
-        ..body = 'Hello from Moorsyl!'
-        ..idempotencyKey = 'sms-unique-key-123'),
-    );
+final response = await verifyApi.verifySend(
+  verifySendRequest: VerifySendRequest((b) => b..to = '+22236551999'),
+);
 
-    final data = response.data;
-    if (data != null) {
-      print('Accepted: ${data.accepted}');
-      print('Idempotency key: ${data.idempotencyKey}');
-    }
-  } on DioException catch (e) {
-    print('SMS send failed: ${e.message}');
-  }
+final verificationId = response.data!.verificationId;
+// Store this and pass it to the next step
+```
+
+### Step 2 — check the code
+
+```dart
+final response = await verifyApi.verifyCheck(
+  verifyCheckRequest: VerifyCheckRequest((b) => b
+    ..verificationId = verificationId
+    ..code = codeEnteredByUser),
+);
+
+if (response.data!.status == VerifyCheck200ResponseStatusEnum.approved) {
+  // Phone verified — let the user in
+} else {
+  // Wrong code, expired, or too many attempts
 }
 ```
 
-## Get SMS Status
+Sessions expire after 10 minutes or 5 failed attempts by default. Both are configurable from your dashboard.
+
+### Check a session's current state
+
+```dart
+final response = await verifyApi.verifyGet(
+  verifySend200Response: VerifySend200Response(
+    (b) => b..verificationId = verificationId,
+  ),
+);
+
+final session = response.data!;
+print('${session.status.name}'); // pending | approved | expired | canceled
+print('Attempts so far: ${session.attempts}');
+print('Expires at: ${session.expiresAt}');
+```
+
+---
+
+## Error handling
+
+Every method throws `DioException` on failures:
 
 ```dart
 import 'package:dio/dio.dart';
-import 'package:moorsyl/moorsyl.dart';
 
-Future<void> getSmsStatusExample(String messageId) async {
-  final client = Moorsyl();
-  client.setApiKey('ApiKey', 'YOUR_MOORSYL_API_KEY');
-
-  final smsApi = client.getSMSApi();
-
-  try {
-    final response = await smsApi.smsGet(
-      smsGetRequest: SmsGetRequest((b) => b..messageId = messageId),
-    );
-
-    final data = response.data;
-    if (data != null) {
-      print('Message ID: ${data.id}');
-      print('Status: ${data.status.name}');
-      print('To: ${data.to}');
-    }
-  } on DioException catch (e) {
-    print('SMS status failed: ${e.message}');
-  }
-}
-```
-
-## Phone Verification (OTP)
-
-### 1) Send verification code
-
-```dart
-import 'package:dio/dio.dart';
-import 'package:moorsyl/moorsyl.dart';
-
-Future<String?> sendVerificationCode() async {
-  final client = Moorsyl();
-  client.setApiKey('ApiKey', 'YOUR_MOORSYL_API_KEY');
-
-  final verifyApi = client.getVerifyApi();
-
-  try {
-    final response = await verifyApi.verifySend(
-      verifySendRequest: VerifySendRequest((b) => b..to = '22230000000'),
-    );
-
-    return response.data?.verificationId;
-  } on DioException catch (e) {
-    print('Verification send failed: ${e.message}');
-    return null;
-  }
-}
-```
-
-### 2) Check verification code
-
-```dart
-import 'package:dio/dio.dart';
-import 'package:moorsyl/moorsyl.dart';
-
-Future<void> checkVerificationCode(String verificationId, String code) async {
-  final client = Moorsyl();
-  client.setApiKey('ApiKey', 'YOUR_MOORSYL_API_KEY');
-
-  final verifyApi = client.getVerifyApi();
-
-  try {
-    final response = await verifyApi.verifyCheck(
-      verifyCheckRequest: VerifyCheckRequest((b) => b
-        ..verificationId = verificationId
-        ..code = code),
-    );
-
-    final status = response.data?.status.name;
-    print('Verification status: $status'); // approved | denied
-  } on DioException catch (e) {
-    print('Verification check failed: ${e.message}');
-  }
-}
-```
-
-### 3) Get verification status
-
-```dart
-import 'package:dio/dio.dart';
-import 'package:moorsyl/moorsyl.dart';
-
-Future<void> getVerificationStatus(String verificationId) async {
-  final client = Moorsyl();
-  client.setApiKey('ApiKey', 'YOUR_MOORSYL_API_KEY');
-
-  final verifyApi = client.getVerifyApi();
-
-  try {
-    final response = await verifyApi.verifyGet(
-      verifySend200Response: VerifySend200Response(
-        (b) => b..verificationId = verificationId,
-      ),
-    );
-
-    final data = response.data;
-    if (data != null) {
-      print('Verification ID: ${data.id}');
-      print('Status: ${data.status.name}');
-      print('Attempts: ${data.attempts}');
-    }
-  } on DioException catch (e) {
-    print('Verification status failed: ${e.message}');
-  }
-}
-```
-
-## Error Handling
-
-All API methods throw `DioException` on request/serialization failures:
-
-```dart
 try {
-  // SDK call
+  await smsApi.smsSend(...);
 } on DioException catch (e) {
-  print('Status: ${e.response?.statusCode}');
-  print('Body: ${e.response?.data}');
+  switch (e.response?.statusCode) {
+    case 401: // bad or missing API key
+    case 402: // insufficient balance — top up at app.moorsyl.com
+    case 429: // rate limit hit
+  }
 }
 ```
+
+---
+
+## Phone number format
+
+All numbers must be Mauritanian and in E.164 format:
+
+```
++222[2-4]XXXXXXX
+```
+
+| Number         | Carrier    | Valid         |
+| -------------- | ---------- | ------------- |
+| `+22221234567` | Mauritel   | ✓             |
+| `+22231234567` | Mattel     | ✓             |
+| `+22241234567` | Chinguitel | ✓             |
+| `22221234567`  | —          | ✗ missing `+` |
+| `+2221234567`  | —          | ✗ too short   |
+
+---
 
 ## Notes
 
-- This SDK uses generated `built_value` models.
-- If you regenerate code locally, run:
+- Set up [Webhooks](https://docs.moorsyl.com/webhooks) to receive `sms.sent`, `sms.failed`, `verify.approved`, and `verify.failed` events in real time.
 
-```bash
-dart run build_runner build --delete-conflicting-outputs
-```
+---
 
-## License
-
-See `LICENSE`.
+**[Get your API keys → moorsyl.com](https://moorsyl.com)** · **[Full reference → docs.moorsyl.com](https://docs.moorsyl.com)**
