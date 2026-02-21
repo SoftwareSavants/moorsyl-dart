@@ -31,10 +31,8 @@ jobs:
       - name: Generate built_value files
         run: dart run build_runner build --delete-conflicting-outputs
 
-      - name: Publish - dry run
-        run: dart pub publish --dry-run
-
       - name: Commit generated files
+        id: commit_generated
         if: github.event.pull_request.head.repo.full_name == github.repository
         run: |
           git config user.email "bot@moorsyl.com"
@@ -42,7 +40,15 @@ jobs:
           git add -A
           if git diff --staged --quiet; then
             echo "No generated changes"
+            echo "committed=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "chore: regenerate built_value files"
-            git push
+            echo "committed=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Publish - dry run
+        run: dart pub publish --dry-run
+
+      - name: Push generated commit
+        if: github.event.pull_request.head.repo.full_name == github.repository && steps.commit_generated.outputs.committed == 'true'
+        run: git push
