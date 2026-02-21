@@ -1,7 +1,7 @@
 name: moorsyl
 version: 1.0.0
 description: Moorsyl API client for Dart and Flutter
-homepage: homepage
+homepage: https://github.com/SoftwareSavants/moorsyl-dart
 
 environment:
   sdk: '>=2.15.0 <4.0.0'
