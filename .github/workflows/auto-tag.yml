@@ -1,0 +1,74 @@
+name: Auto Tag SDK Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'sdk/auto-update'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Use PAT/App token so pushing tag can trigger publish workflow
+          token: ${{ secrets.RELEASE_TOKEN }}
+          fetch-depth: 0
+
+      - name: Determine bump type from labels
+        id: bump
+        run: |
+          LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+          if echo "$LABELS" | grep -q '"release:major"'; then
+            echo "type=major" >> "$GITHUB_OUTPUT"
+          elif echo "$LABELS" | grep -q '"release:minor"'; then
+            echo "type=minor" >> "$GITHUB_OUTPUT"
+          else
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bump pubspec version
+        id: version
+        run: |
+          CURRENT="$(awk '/^version:/{print $2; exit}' pubspec.yaml | cut -d'+' -f1)"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          case "${{ steps.bump.outputs.type }}" in
+            major) NEW="$((MAJOR + 1)).0.0" ;;
+            minor) NEW="$MAJOR.$((MINOR + 1)).0" ;;
+            *)     NEW="$MAJOR.$MINOR.$((PATCH + 1))" ;;
+          esac
+
+          python3 - <<PY
+          from pathlib import Path
+          p = Path("pubspec.yaml")
+          lines = p.read_text().splitlines()
+          replaced = False
+          out = []
+          for line in lines:
+            if not replaced and line.startswith("version:"):
+              out.append("version: " + "${NEW}")
+              replaced = True
+            else:
+              out.append(line)
+          if not replaced:
+            raise SystemExit("No version field found in pubspec.yaml")
+          p.write_text("\\n".join(out) + "\\n")
+          PY
+
+          echo "new_version=${NEW}" >> "$GITHUB_OUTPUT"
+
+      - name: Commit + tag
+        run: |
+          git config user.name "Moorsyl Bot"
+          git config user.email "bot@moorsyl.com"
+          git add pubspec.yaml
+          git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }}"
+          git tag "v${{ steps.version.outputs.new_version }}"
+          git push origin main
+          git push origin "v${{ steps.version.outputs.new_version }}"
