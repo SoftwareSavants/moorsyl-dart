@@ -6,17 +6,40 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   validate:
-    name: 'Validate'
+    name: Validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # checkout the PR branch so push goes back to it
+          ref: ${{ github.head_ref }}
+
       - uses: dart-lang/setup-dart@v1
       - uses: flutter-actions/setup-flutter@v4
 
       - name: Install dependencies
         run: dart pub get
 
+      - name: Generate built_value files
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Publish - dry run
         run: dart pub publish --dry-run
+
+      - name: Commit generated files
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No generated changes"
+          else
+            git commit -m "chore: regenerate built_value files"
+            git push
+          fi
