@@ -10,6 +10,8 @@ class _$SmsSend200Response extends SmsSend200Response {
   @override
   final JsonObject? accepted;
   @override
+  final String messageId;
+  @override
   final String idempotencyKey;
   @override
   final String organizationId;
@@ -20,6 +22,7 @@ class _$SmsSend200Response extends SmsSend200Response {
 
   _$SmsSend200Response._(
       {this.accepted,
+      required this.messageId,
       required this.idempotencyKey,
       required this.organizationId})
       : super._();
@@ -37,6 +40,7 @@ class _$SmsSend200Response extends SmsSend200Response {
     if (identical(other, this)) return true;
     return other is SmsSend200Response &&
         accepted == other.accepted &&
+        messageId == other.messageId &&
         idempotencyKey == other.idempotencyKey &&
         organizationId == other.organizationId;
   }
@@ -45,6 +49,7 @@ class _$SmsSend200Response extends SmsSend200Response {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, accepted.hashCode);
+    _$hash = $jc(_$hash, messageId.hashCode);
     _$hash = $jc(_$hash, idempotencyKey.hashCode);
     _$hash = $jc(_$hash, organizationId.hashCode);
     _$hash = $jf(_$hash);
@@ -55,6 +60,7 @@ class _$SmsSend200Response extends SmsSend200Response {
   String toString() {
     return (newBuiltValueToStringHelper(r'SmsSend200Response')
           ..add('accepted', accepted)
+          ..add('messageId', messageId)
           ..add('idempotencyKey', idempotencyKey)
           ..add('organizationId', organizationId))
         .toString();
@@ -68,6 +74,10 @@ class SmsSend200ResponseBuilder
   JsonObject? _accepted;
   JsonObject? get accepted => _$this._accepted;
   set accepted(JsonObject? accepted) => _$this._accepted = accepted;
+
+  String? _messageId;
+  String? get messageId => _$this._messageId;
+  set messageId(String? messageId) => _$this._messageId = messageId;
 
   String? _idempotencyKey;
   String? get idempotencyKey => _$this._idempotencyKey;
@@ -87,6 +97,7 @@ class SmsSend200ResponseBuilder
     final $v = _$v;
     if ($v != null) {
       _accepted = $v.accepted;
+      _messageId = $v.messageId;
       _idempotencyKey = $v.idempotencyKey;
       _organizationId = $v.organizationId;
       _$v = null;
@@ -111,6 +122,8 @@ class SmsSend200ResponseBuilder
     final _$result = _$v ??
         _$SmsSend200Response._(
           accepted: accepted,
+          messageId: BuiltValueNullFieldError.checkNotNull(
+              messageId, r'SmsSend200Response', 'messageId'),
           idempotencyKey: BuiltValueNullFieldError.checkNotNull(
               idempotencyKey, r'SmsSend200Response', 'idempotencyKey'),
           organizationId: BuiltValueNullFieldError.checkNotNull(
