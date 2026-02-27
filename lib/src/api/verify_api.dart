@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
@@ -22,7 +23,7 @@ class VerifyApi {
   const VerifyApi(this._dio, this._serializers);
 
   /// Check a verification code
-  /// Validate the one-time code entered by the user. Returns approved on a correct match, or denied when the code is wrong, expired, or already used.
+  /// Validate the one-time code entered by the user and return approved for a correct match, or denied when the code is incorrect, expired, or already used.
   ///
   /// Parameters:
   /// * [verifyCheckRequest] 

@@ -13,12 +13,16 @@ part 'sms_send200_response.g.dart';
 ///
 /// Properties:
 /// * [accepted] 
+/// * [messageId] 
 /// * [idempotencyKey] 
 /// * [organizationId] 
 @BuiltValue()
 abstract class SmsSend200Response implements Built<SmsSend200Response, SmsSend200ResponseBuilder> {
   @BuiltValueField(wireName: r'accepted')
   JsonObject? get accepted;
+
+  @BuiltValueField(wireName: r'messageId')
+  String get messageId;
 
   @BuiltValueField(wireName: r'idempotencyKey')
   String get idempotencyKey;
@@ -53,6 +57,11 @@ class _$SmsSend200ResponseSerializer implements PrimitiveSerializer<SmsSend200Re
     yield object.accepted == null ? null : serializers.serialize(
       object.accepted,
       specifiedType: const FullType.nullable(JsonObject),
+    );
+    yield r'messageId';
+    yield serializers.serialize(
+      object.messageId,
+      specifiedType: const FullType(String),
     );
     yield r'idempotencyKey';
     yield serializers.serialize(
@@ -94,6 +103,13 @@ class _$SmsSend200ResponseSerializer implements PrimitiveSerializer<SmsSend200Re
           ) as JsonObject?;
           if (valueDes == null) continue;
           result.accepted = valueDes;
+          break;
+        case r'messageId':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.messageId = valueDes;
           break;
         case r'idempotencyKey':
           final valueDes = serializers.deserialize(

@@ -12,6 +12,11 @@ void main() {
       // TODO
     });
 
+    // String messageId
+    test('to test the property `messageId`', () async {
+      // TODO
+    });
+
     // String idempotencyKey
     test('to test the property `idempotencyKey`', () async {
       // TODO
