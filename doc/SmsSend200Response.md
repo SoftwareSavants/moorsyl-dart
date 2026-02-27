@@ -9,6 +9,7 @@ import 'package:moorsyl/api.dart';
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **accepted** | [**JsonObject**](.md) |  | 
+**messageId** | **String** |  | 
 **idempotencyKey** | **String** |  | 
 **organizationId** | **String** |  | 
 
