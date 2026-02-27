@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2
+
+- New `messageId` in the sms posting response
+
+
 ## 1.0.1
 
 - Add README.md
