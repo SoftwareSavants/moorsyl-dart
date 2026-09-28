@@ -8,7 +8,7 @@ import 'package:moorsyl/api.dart';
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**to** | **String** |  | 
+**to** | **String** |  | [optional] 
 **from** | **String** |  | [optional] 
 **body** | **String** |  | 
 **idempotencyKey** | **String** |  | [optional] 

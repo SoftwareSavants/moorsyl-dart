@@ -17,6 +17,7 @@ import 'package:moorsyl/src/model/date.dart';
 import 'package:moorsyl/src/model/sms_get200_response.dart';
 import 'package:moorsyl/src/model/sms_get_request.dart';
 import 'package:moorsyl/src/model/sms_send200_response.dart';
+import 'package:moorsyl/src/model/sms_send200_response_notice.dart';
 import 'package:moorsyl/src/model/sms_send_request.dart';
 import 'package:moorsyl/src/model/verify_check200_response.dart';
 import 'package:moorsyl/src/model/verify_check_request.dart';
@@ -30,6 +31,7 @@ part 'serializers.g.dart';
   SmsGet200Response,
   SmsGetRequest,
   SmsSend200Response,
+  SmsSend200ResponseNotice,
   SmsSendRequest,
   VerifyCheck200Response,
   VerifyCheckRequest,

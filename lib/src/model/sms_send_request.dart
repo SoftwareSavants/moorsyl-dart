@@ -18,7 +18,7 @@ part 'sms_send_request.g.dart';
 @BuiltValue()
 abstract class SmsSendRequest implements Built<SmsSendRequest, SmsSendRequestBuilder> {
   @BuiltValueField(wireName: r'to')
-  String get to;
+  String? get to;
 
   @BuiltValueField(wireName: r'from')
   String? get from;
@@ -52,11 +52,13 @@ class _$SmsSendRequestSerializer implements PrimitiveSerializer<SmsSendRequest> 
     SmsSendRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'to';
-    yield serializers.serialize(
-      object.to,
-      specifiedType: const FullType(String),
-    );
+    if (object.to != null) {
+      yield r'to';
+      yield serializers.serialize(
+        object.to,
+        specifiedType: const FullType(String),
+      );
+    }
     if (object.from != null) {
       yield r'from';
       yield serializers.serialize(
