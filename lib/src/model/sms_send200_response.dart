@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:moorsyl/src/model/sms_send200_response_notice.dart';
 import 'package:built_value/json_object.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -16,6 +17,8 @@ part 'sms_send200_response.g.dart';
 /// * [messageId] 
 /// * [idempotencyKey] 
 /// * [organizationId] 
+/// * [from] - The sender ID the message is sent with.
+/// * [notice] 
 @BuiltValue()
 abstract class SmsSend200Response implements Built<SmsSend200Response, SmsSend200ResponseBuilder> {
   @BuiltValueField(wireName: r'accepted')
@@ -29,6 +32,13 @@ abstract class SmsSend200Response implements Built<SmsSend200Response, SmsSend20
 
   @BuiltValueField(wireName: r'organizationId')
   String get organizationId;
+
+  /// The sender ID the message is sent with.
+  @BuiltValueField(wireName: r'from')
+  String get from;
+
+  @BuiltValueField(wireName: r'notice')
+  SmsSend200ResponseNotice? get notice;
 
   SmsSend200Response._();
 
@@ -73,6 +83,18 @@ class _$SmsSend200ResponseSerializer implements PrimitiveSerializer<SmsSend200Re
       object.organizationId,
       specifiedType: const FullType(String),
     );
+    yield r'from';
+    yield serializers.serialize(
+      object.from,
+      specifiedType: const FullType(String),
+    );
+    if (object.notice != null) {
+      yield r'notice';
+      yield serializers.serialize(
+        object.notice,
+        specifiedType: const FullType(SmsSend200ResponseNotice),
+      );
+    }
   }
 
   @override
@@ -124,6 +146,20 @@ class _$SmsSend200ResponseSerializer implements PrimitiveSerializer<SmsSend200Re
             specifiedType: const FullType(String),
           ) as String;
           result.organizationId = valueDes;
+          break;
+        case r'from':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.from = valueDes;
+          break;
+        case r'notice':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(SmsSend200ResponseNotice),
+          ) as SmsSend200ResponseNotice;
+          result.notice.replace(valueDes);
           break;
         default:
           unhandled.add(key);

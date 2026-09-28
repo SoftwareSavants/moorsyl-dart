@@ -8,7 +8,7 @@ part of 'sms_send_request.dart';
 
 class _$SmsSendRequest extends SmsSendRequest {
   @override
-  final String to;
+  final String? to;
   @override
   final String? from;
   @override
@@ -20,7 +20,7 @@ class _$SmsSendRequest extends SmsSendRequest {
       (SmsSendRequestBuilder()..update(updates))._build();
 
   _$SmsSendRequest._(
-      {required this.to, this.from, required this.body, this.idempotencyKey})
+      {this.to, this.from, required this.body, this.idempotencyKey})
       : super._();
   @override
   SmsSendRequest rebuild(void Function(SmsSendRequestBuilder) updates) =>
@@ -114,8 +114,7 @@ class SmsSendRequestBuilder
   _$SmsSendRequest _build() {
     final _$result = _$v ??
         _$SmsSendRequest._(
-          to: BuiltValueNullFieldError.checkNotNull(
-              to, r'SmsSendRequest', 'to'),
+          to: to,
           from: from,
           body: BuiltValueNullFieldError.checkNotNull(
               body, r'SmsSendRequest', 'body'),

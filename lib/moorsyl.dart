@@ -16,6 +16,7 @@ export 'package:moorsyl/src/api/verify_api.dart';
 export 'package:moorsyl/src/model/sms_get200_response.dart';
 export 'package:moorsyl/src/model/sms_get_request.dart';
 export 'package:moorsyl/src/model/sms_send200_response.dart';
+export 'package:moorsyl/src/model/sms_send200_response_notice.dart';
 export 'package:moorsyl/src/model/sms_send_request.dart';
 export 'package:moorsyl/src/model/verify_check200_response.dart';
 export 'package:moorsyl/src/model/verify_check_request.dart';

@@ -27,5 +27,16 @@ void main() {
       // TODO
     });
 
+    // The sender ID the message is sent with.
+    // String from
+    test('to test the property `from`', () async {
+      // TODO
+    });
+
+    // SmsSend200ResponseNotice notice
+    test('to test the property `notice`', () async {
+      // TODO
+    });
+
   });
 }
