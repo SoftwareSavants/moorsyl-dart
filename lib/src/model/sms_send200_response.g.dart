@@ -15,6 +15,10 @@ class _$SmsSend200Response extends SmsSend200Response {
   final String idempotencyKey;
   @override
   final String organizationId;
+  @override
+  final String from;
+  @override
+  final SmsSend200ResponseNotice? notice;
 
   factory _$SmsSend200Response(
           [void Function(SmsSend200ResponseBuilder)? updates]) =>
@@ -24,7 +28,9 @@ class _$SmsSend200Response extends SmsSend200Response {
       {this.accepted,
       required this.messageId,
       required this.idempotencyKey,
-      required this.organizationId})
+      required this.organizationId,
+      required this.from,
+      this.notice})
       : super._();
   @override
   SmsSend200Response rebuild(
@@ -42,7 +48,9 @@ class _$SmsSend200Response extends SmsSend200Response {
         accepted == other.accepted &&
         messageId == other.messageId &&
         idempotencyKey == other.idempotencyKey &&
-        organizationId == other.organizationId;
+        organizationId == other.organizationId &&
+        from == other.from &&
+        notice == other.notice;
   }
 
   @override
@@ -52,6 +60,8 @@ class _$SmsSend200Response extends SmsSend200Response {
     _$hash = $jc(_$hash, messageId.hashCode);
     _$hash = $jc(_$hash, idempotencyKey.hashCode);
     _$hash = $jc(_$hash, organizationId.hashCode);
+    _$hash = $jc(_$hash, from.hashCode);
+    _$hash = $jc(_$hash, notice.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -62,7 +72,9 @@ class _$SmsSend200Response extends SmsSend200Response {
           ..add('accepted', accepted)
           ..add('messageId', messageId)
           ..add('idempotencyKey', idempotencyKey)
-          ..add('organizationId', organizationId))
+          ..add('organizationId', organizationId)
+          ..add('from', from)
+          ..add('notice', notice))
         .toString();
   }
 }
@@ -89,6 +101,16 @@ class SmsSend200ResponseBuilder
   set organizationId(String? organizationId) =>
       _$this._organizationId = organizationId;
 
+  String? _from;
+  String? get from => _$this._from;
+  set from(String? from) => _$this._from = from;
+
+  SmsSend200ResponseNoticeBuilder? _notice;
+  SmsSend200ResponseNoticeBuilder get notice =>
+      _$this._notice ??= SmsSend200ResponseNoticeBuilder();
+  set notice(SmsSend200ResponseNoticeBuilder? notice) =>
+      _$this._notice = notice;
+
   SmsSend200ResponseBuilder() {
     SmsSend200Response._defaults(this);
   }
@@ -100,6 +122,8 @@ class SmsSend200ResponseBuilder
       _messageId = $v.messageId;
       _idempotencyKey = $v.idempotencyKey;
       _organizationId = $v.organizationId;
+      _from = $v.from;
+      _notice = $v.notice?.toBuilder();
       _$v = null;
     }
     return this;
@@ -119,16 +143,32 @@ class SmsSend200ResponseBuilder
   SmsSend200Response build() => _build();
 
   _$SmsSend200Response _build() {
-    final _$result = _$v ??
-        _$SmsSend200Response._(
-          accepted: accepted,
-          messageId: BuiltValueNullFieldError.checkNotNull(
-              messageId, r'SmsSend200Response', 'messageId'),
-          idempotencyKey: BuiltValueNullFieldError.checkNotNull(
-              idempotencyKey, r'SmsSend200Response', 'idempotencyKey'),
-          organizationId: BuiltValueNullFieldError.checkNotNull(
-              organizationId, r'SmsSend200Response', 'organizationId'),
-        );
+    _$SmsSend200Response _$result;
+    try {
+      _$result = _$v ??
+          _$SmsSend200Response._(
+            accepted: accepted,
+            messageId: BuiltValueNullFieldError.checkNotNull(
+                messageId, r'SmsSend200Response', 'messageId'),
+            idempotencyKey: BuiltValueNullFieldError.checkNotNull(
+                idempotencyKey, r'SmsSend200Response', 'idempotencyKey'),
+            organizationId: BuiltValueNullFieldError.checkNotNull(
+                organizationId, r'SmsSend200Response', 'organizationId'),
+            from: BuiltValueNullFieldError.checkNotNull(
+                from, r'SmsSend200Response', 'from'),
+            notice: _notice?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'notice';
+        _notice?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'SmsSend200Response', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }
